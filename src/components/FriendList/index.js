@@ -14,7 +14,7 @@ export default function FriendList({ quantidade, randomico }) {
   return (
     <>
       <h2 className="smallTitle">
-        Seguidevs ({friends.length})
+        Seguidevs ({ friends.length })
       </h2>
       <ul>
         {friends.map((friend) => {
