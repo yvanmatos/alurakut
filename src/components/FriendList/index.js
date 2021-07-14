@@ -4,6 +4,8 @@ import FriendItem from "../FriendItem";
 
 export default function FriendList({ quantidade, randomico }) {
   const [friends, setFriends] = useState([]);
+  const friendsBox = friends.slice(0, 6);
+
 
   useEffect(() => {
     GitHubService.getFollowers(quantidade, randomico).then((friendsList) =>
@@ -17,7 +19,7 @@ export default function FriendList({ quantidade, randomico }) {
         Seguidevs ({ friends.length })
       </h2>
       <ul>
-        {friends.map((friend) => {
+        {friendsBox.map((friend) => {
           return (
             <FriendItem
               key={friend.login}
