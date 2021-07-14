@@ -12,11 +12,18 @@ import { AlurakutMenu, OrkutNostalgicIconSet } from '../src/lib/AlurakutCommons'
 export default function Home() {
 
   const [username, setUsername] = useState([]);
-  const [userCommunity, setCommunity ] = useState([{
-    id: "1234",
+  const [userCommunity, setCommunity ] = useState([
+    {
+    id: "1",
     title: "Eu abro a geladeira pra pensar.",
     image: "https://www.fatosdesconhecidos.com.br/wp-content/uploads/2015/05/gelad-575x400.jpg"
-  }]);
+    },
+    {
+    id: "2",
+    title: "Eu nunca terminei uma borracha.",
+    image: "https://img10.orkut.br.com/community/9514b17c3b4784691b08a21219eec915.jpg"
+    }
+  ]);
 
   
 
@@ -86,7 +93,6 @@ export default function Home() {
           </h2>
           <ul>
             {userCommunity.map((community) => {
-                console.log(userCommunity)
               return (
                 <CommunityItem
                   key={community.id}
