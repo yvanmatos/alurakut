@@ -1,25 +1,27 @@
 import React, { useEffect, useState } from "react";
+import nookies from 'nookies';
+import jwt from 'jsonwebtoken';
 import MainGrid from '../src/components/MainGrid'
 import Box from '../src/components/Box'
 import ProfileSidebar from '../src/components/ProfileSidebar'
-import FriendList from "../src/components/FriendList";
+import FriendItem from "../src/components/FriendItem";
 import CommunityItem from "../src/components/CommunityItem";
 import GitHubService from "../src/api/";
 import { ProfileRelationsBoxWrapper } from '../src/components/ProfileRelations'
 import { AlurakutMenu, OrkutNostalgicIconSet } from '../src/lib/AlurakutCommons'
 
 
-export default function Home() {
-
-  const [username, setUsername] = useState([]);
+export default function Home(props) {
+  const user = props.githubUser
+  const [friends, setFriends] = useState([]);
   const [userCommunity, setCommunity ] = useState([
 
   ]);
-
   
-
   useEffect(() => {
-    GitHubService.getUsername().then((userName) => setUsername(userName));
+    GitHubService.getFollowers(user).then((friendsList) =>
+      setFriends(friendsList)
+    );
 
     // API GRAPHQL
     fetch('https://graphql.datocms.com/', { 
@@ -48,15 +50,15 @@ export default function Home() {
 
   return (
     <>
-      <AlurakutMenu githubUser={username.login} />
+      <AlurakutMenu githubUser={user} />
       <MainGrid>
         <div className="profileArea" style={{ gridArea: 'profileArea' }}>
-          <ProfileSidebar username={username.login} />
+          <ProfileSidebar username={user} />
         </div>
         <div className="welcomeArea" style={{ gridArea: 'welcomeArea' }}>
           <Box>
             <h1 className="title">
-              Bem vindo(a), <strong>{username.login}</strong>
+              Bem vindo(a), <strong>{user}</strong>
             </h1>
 
             <OrkutNostalgicIconSet fas={2} confiavel={3} legal={3} sexy={2} />
@@ -71,7 +73,7 @@ export default function Home() {
               const community = {                
                 title : communityFormData.get('title'),
                 imageUrl: communityFormData.get('image'),
-                creatorslug: 'yvanmatos'
+                creatorslug: user
               }
 
               fetch('/api/comunidades', {
@@ -125,17 +127,61 @@ export default function Home() {
                   id={community.id}
                   name={community.title}
                   img_url={community.imageUrl}
-                  slu={community.creatorslug}
                 />
               );
             })}
           </ul>
           </ProfileRelationsBoxWrapper>
           <ProfileRelationsBoxWrapper>
-            <FriendList quantidade={6} randomico={true} />
+          <>
+            <h2 className="smallTitle">
+              Seguidevs ({ friends.length })
+            </h2>
+            <ul>
+              {friends.map((friend) => {
+                return (
+                  <FriendItem
+                    key={friend.login}
+                    html_url={friend.html_url}
+                    login={friend.login}
+                    avatar_url={friend.avatar_url}
+                  />
+                );
+              })}
+            </ul>
+          </>
           </ProfileRelationsBoxWrapper>
         </div>
       </MainGrid>
     </>
   )
 }
+
+export async function getServerSideProps(context) {
+  const cookies = nookies.get(context)
+  const token = cookies.USER_TOKEN;
+  const { githubUser } = jwt.decode(token);
+  
+  const { isAuthenticated } = await fetch('https://alurakut.vercel.app/api/auth', {
+    headers: {
+        Authorization: token
+      }
+  })
+  .then((resposta) => resposta.json())
+  
+  if(!isAuthenticated) {
+    return {
+      redirect: {
+        destination: '/login',
+        permanent: false,
+      }
+    }
+  }
+
+
+  return {
+    props: {
+      githubUser
+    }, // will be passed to the page component as props
+  }
+} 
